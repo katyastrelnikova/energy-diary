@@ -210,6 +210,7 @@ function sc(c){ localStorage.setItem('ed5c',JSON.stringify(c)); }
 let sel={Утро:null,День:null,Вечер:null};
 let notes={Утро:'',День:'',Вечер:''};
 let sleepHours=null;
+let deepSleep=null;
 let dipTime=null;
 let reportPeriod='week';
 let currentOffset=0;
@@ -219,6 +220,7 @@ function changeDay(delta){ if(delta===0){currentOffset=0;}else{currentOffset=Mat
 function getViewDate(){ const d=new Date(); d.setDate(d.getDate()+currentOffset); d.setHours(0,0,0,0); return d; }
 
 function stByKey(key){ return ST.find(s=>s.key===key); }
+function deepSleepMins(v){ if(!v) return 0; const p=String(v).split(':'); if(p.length===2) return parseInt(p[0]||0)*60+parseInt(p[1]||0); return parseInt(v)||0; }
 
 function getCycleDay(){
   return getCycleDayForDate(new Date());
@@ -267,6 +269,7 @@ function renderToday(){
   if(ex.notes) notes=Object.assign({Утро:'',День:'',Вечер:''},ex.notes);
   else notes={Утро:'',День:'',Вечер:''};
   sleepHours=ex.sleep||null;
+  deepSleep=ex.deepSleep||null;
 
   const phaseInfo=getPhase(getCycleDayForDate(today));
   const tab=document.getElementById('tab-today');
@@ -293,14 +296,27 @@ function renderToday(){
 
   tab.innerHTML=`${dateNav}
     ${cycleBanner}
-    <div style="background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:10px;border:1px solid #e8e6e0;display:flex;align-items:center;gap:12px">
-      <span style="font-size:18px">😴</span>
-      <div style="flex:1">
-        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#888780;margin-bottom:6px">Оценка сна (Sleep++)</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <input type="number" id="sleep-input" min="1" max="100" value="${sleepHours||''}" placeholder="—" style="width:70px;border:1.5px solid #e8e6e0;border-radius:8px;padding:6px 10px;font-size:18px;font-weight:500;font-family:inherit;background:#f5f4f0;color:#1a1a18;outline:none;text-align:center" oninput="sleepHours=this.value?parseInt(this.value):null">
-          <span style="font-size:13px;color:#888780">из 100</span>
-          ${sleepHours?`<span style="margin-left:4px;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:500;background:${sleepHours>=80?'#E1F5EE':sleepHours>=60?'#FFFBEA':sleepHours>=40?'#FAECE7':'#FCEBEB'};color:${sleepHours>=80?'#085041':sleepHours>=60?'#7A5A00':sleepHours>=40?'#4A1B0C':'#501313'}">${sleepHours>=80?'Хорошо':sleepHours>=60?'Нормально':sleepHours>=40?'Плохо':'Очень плохо'}</span>`:''}
+    <div style="background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:10px;border:1px solid #e8e6e0">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <span style="font-size:18px">😴</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#888780;margin-bottom:6px">Оценка сна (Sleep++)</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="sleep-input" min="1" max="100" value="${sleepHours||''}" placeholder="—" style="width:70px;border:1.5px solid #e8e6e0;border-radius:8px;padding:6px 10px;font-size:18px;font-weight:500;font-family:inherit;background:#f5f4f0;color:#1a1a18;outline:none;text-align:center" oninput="sleepHours=this.value?parseInt(this.value):null">
+            <span style="font-size:13px;color:#888780">из 100</span>
+            ${sleepHours?`<span style="margin-left:4px;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:500;background:${sleepHours>=80?'#E1F5EE':sleepHours>=60?'#FFFBEA':sleepHours>=40?'#FAECE7':'#FCEBEB'};color:${sleepHours>=80?'#085041':sleepHours>=60?'#7A5A00':sleepHours>=40?'#4A1B0C':'#501313'}">${sleepHours>=80?'Хорошо':sleepHours>=60?'Нормально':sleepHours>=40?'Плохо':'Очень плохо'}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div style="border-top:0.5px solid #e8e6e0;padding-top:10px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:18px">🌙</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#888780;margin-bottom:6px">Deep sleep</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="text" id="deepsleep-input" value="${deepSleep||''}" placeholder="1:30" maxlength="5" style="width:70px;border:1.5px solid #e8e6e0;border-radius:8px;padding:6px 10px;font-size:18px;font-weight:500;font-family:inherit;background:#f5f4f0;color:#1a1a18;outline:none;text-align:center" oninput="deepSleep=this.value||null">
+            <span style="font-size:13px;color:#888780">ч:мм</span>
+            ${deepSleep?`<span style="margin-left:4px;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:500;background:${deepSleepMins(deepSleep)>=90?'#E1F5EE':deepSleepMins(deepSleep)>=60?'#FFFBEA':'#FAECE7'};color:${deepSleepMins(deepSleep)>=90?'#085041':deepSleepMins(deepSleep)>=60?'#7A5A00':'#4A1B0C'}">${deepSleepMins(deepSleep)>=90?'Хорошо':deepSleepMins(deepSleep)>=60?'Нормально':'Мало'}</span>`:''}
+          </div>
         </div>
       </div>
     </div>
@@ -364,7 +380,7 @@ function saveDay(){
   SLOTS.forEach(s=>{ notes[s]=(document.getElementById('note-'+s)||{value:''}).value; });
   const data=load(); const key=gk(getViewDate());
   if(!data[key]) data[key]={};
-  Object.assign(data[key],{slots:{...sel},notes:{...notes},sleep:sleepHours,ts:Date.now()});
+  Object.assign(data[key],{slots:{...sel},notes:{...notes},sleep:sleepHours,deepSleep:deepSleep,ts:Date.now()});
   save(data); if(currentOffset===0) checkScenarios(data);
   const t=document.getElementById('toast'); if(t){t.textContent='Сохранено ✓';setTimeout(()=>{t.textContent='';},2000);}
 }
@@ -447,11 +463,12 @@ function renderWeek(){
     // Day name cell with optional phase dot
     const tdN=document.createElement('td');
     const sleepVal=day.sleep;
+    const deepSleepVal=day.deepSleep;
     tdN.innerHTML=`<div class="day-cell-wrap">
       <span style="${isT?'color:#1a1a18;font-weight:600':''}">${DAYS[i]}</span>
       <div style="display:flex;align-items:center;gap:3px">
         ${phaseInfo?`<div class="phase-dot" style="background:${phaseInfo.phase.dot}" title="${phaseInfo.phase.name} · День ${phaseInfo.day}"></div>`:''}
-        ${sleepVal?`<span style="font-size:10px;font-weight:500;color:${sleepVal>=80?'#1D9E75':sleepVal>=60?'#7A5A00':sleepVal>=40?'#D85A30':'#E24B4A'}">${sleepVal}</span>`:''}
+        ${sleepVal?`<span style="font-size:10px;font-weight:500;color:${sleepVal>=80?'#1D9E75':sleepVal>=60?'#7A5A00':sleepVal>=40?'#D85A30':'#E24B4A'}">${sleepVal}</span>`:''}${deepSleepVal?`<span style="font-size:10px;color:#888780"> ${deepSleepVal}</span>`:''}
       </div>
     </div>`;
     tr.appendChild(tdN);
