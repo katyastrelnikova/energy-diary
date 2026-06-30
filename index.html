@@ -245,7 +245,10 @@ function getCycleDayForDate(date){
   if(!starts.length) return null;
   const start=starts[0];
   const diff=Math.floor((d-start)/86400000); if(diff<0) return null;
-  return {day:diff%len+1, len, men};
+  // If actual days since last period start exceed cycle length, the cycle is delayed —
+  // don't guess a new cycle automatically, only manual entry of a new start date resolves this.
+  if(diff>=len) return null;
+  return {day:diff+1, len, men};
 }
 
 function switchTab(t){
